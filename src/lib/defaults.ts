@@ -1,0 +1,51 @@
+import type { Menu, Settings } from '../types'
+
+export const MENU_A_ID = 'menu-a'
+export const MENU_B_ID = 'menu-b'
+
+export const defaultMenus = (): Menu[] => [
+  {
+    id: MENU_A_ID,
+    name: 'A日（プッシュ）',
+    exercises: [
+      { name: 'ベンチプレス', targetSets: 3, targetRepsMin: 8, targetRepsMax: 12 },
+      { name: 'ショルダープレス', targetSets: 3, targetRepsMin: 8, targetRepsMax: 12 },
+      { name: 'サイドレイズ', targetSets: 3, targetRepsMin: 12, targetRepsMax: 15 },
+      { name: 'トライセプスプレスダウン', targetSets: 3, targetRepsMin: 10, targetRepsMax: 15 },
+    ],
+  },
+  {
+    id: MENU_B_ID,
+    name: 'B日（プル）',
+    exercises: [
+      { name: 'ラットプルダウン', targetSets: 3, targetRepsMin: 8, targetRepsMax: 12 },
+      { name: 'シーテッドロウ', targetSets: 3, targetRepsMin: 8, targetRepsMax: 12 },
+      { name: 'アームカール', targetSets: 3, targetRepsMin: 10, targetRepsMax: 15 },
+      { name: '腹筋（クランチ）', targetSets: 3, targetRepsMin: 15, targetRepsMax: 20 },
+    ],
+  },
+]
+
+export const defaultSettings = (): Settings => ({
+  weeklySchedule: {
+    mon: [{ type: 'rest' }],
+    tue: [{ type: 'gym', menuId: MENU_A_ID }],
+    wed: [{ type: 'run' }],
+    thu: [{ type: 'pickleball' }],
+    fri: [{ type: 'gym', menuId: MENU_B_ID }],
+    sat: [{ type: 'run' }],
+    sun: [{ type: 'run' }, { type: 'pickleball' }],
+  },
+  goals: {
+    gymPerWeek: 2,
+    runKmPerWeek: 25,
+    proteinDaysPerWeek: 6,
+    targetWeightKg: undefined,
+  },
+  events: [
+    { name: 'ピックルボール市民大会', date: '2026-07-15' },
+    { name: 'プール付きコテージ旅行', date: '2026-09-15' },
+    { name: '大阪マラソン（日付は確定後に更新）', date: '2027-02-28' },
+  ],
+  theme: 'dark',
+})
