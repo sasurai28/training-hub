@@ -155,15 +155,19 @@ function parseHealthItems(items: unknown[]): LogsImportResult {
       day.weightKg = kg
     } else if (type === 'run') {
       const km = num(it.km)
-      const durationSec = num(it.durationSec)
-      if (km == null || durationSec == null) continue
+      if (km == null) continue // 距離だけは必須。時間や心拍は無くても可
+      const durMin = num(it.durationMin)
+      let durationSec = num(it.durationSec)
+      if (durationSec == null && durMin != null) durationSec = durMin * 60
       const hr = num(it.avgHr)
       const memo = [typeof it.memo === 'string' ? it.memo : '', hr != null ? `心拍${Math.round(hr)}` : '']
         .filter(Boolean)
         .join(' ')
-      day.run = { km, durationSec: Math.round(durationSec), kind: 'jog', ...(memo ? { memo } : {}) }
+      day.run = { km, durationSec: durationSec != null ? Math.round(durationSec) : 0, kind: 'jog', ...(memo ? { memo } : {}) }
     } else if (type === 'pickleball') {
-      const durationSec = num(it.durationSec)
+      const durMin = num(it.durationMin)
+      let durationSec = num(it.durationSec)
+      if (durationSec == null && durMin != null) durationSec = durMin * 60
       const memo = [typeof it.memo === 'string' ? it.memo : '', durationSec != null ? `${Math.round(durationSec / 60)}分` : '']
         .filter(Boolean)
         .join(' ')
