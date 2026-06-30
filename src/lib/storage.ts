@@ -4,6 +4,7 @@ import { defaultMenus, defaultSettings } from './defaults'
 const K_LOGS = 'th:logs'
 const K_MENUS = 'th:menus'
 const K_SETTINGS = 'th:settings'
+const K_AI_KEY = 'th:aiKey'
 const EXPORT_VERSION = 1
 
 function read<T>(key: string, fallback: T): T {
@@ -48,6 +49,23 @@ export function loadAppData(): AppData {
 export const saveLogs = (logs: Record<string, DayLog>) => write(K_LOGS, logs)
 export const saveMenus = (menus: Menu[]) => write(K_MENUS, menus)
 export const saveSettings = (settings: Settings) => write(K_SETTINGS, settings)
+
+// AIコーチ用 APIキー。意図的に ExportBundle には含めない（バックアップへの鍵漏洩を防ぐ）。
+export function loadAiKey(): string {
+  try {
+    return localStorage.getItem(K_AI_KEY) ?? ''
+  } catch {
+    return ''
+  }
+}
+export function saveAiKey(key: string): void {
+  try {
+    if (key) localStorage.setItem(K_AI_KEY, key)
+    else localStorage.removeItem(K_AI_KEY)
+  } catch (e) {
+    console.error('APIキーの保存に失敗:', e)
+  }
+}
 
 export function exportBundle(data: AppData, exportedAt: string): ExportBundle {
   return {

@@ -13,8 +13,9 @@ const ACT_OPTIONS: { value: ScheduleItem['type']; label: string }[] = [
 ]
 
 export default function SettingsView() {
-  const { menus, settings, setMenus, setSettings, replaceAll, mergeLogs, exportJSON } = useStore()
+  const { menus, settings, setMenus, setSettings, replaceAll, mergeLogs, exportJSON, aiKey, setAiKey } = useStore()
   const [msg, setMsg] = useState('')
+  const [showKey, setShowKey] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const mergeRef = useRef<HTMLInputElement>(null)
 
@@ -187,6 +188,36 @@ export default function SettingsView() {
           <button className="btn btn-sm" onClick={addEvent}>＋イベントを追加</button>
         </div>
       </details>
+
+      {/* AIコーチ */}
+      <div className="section-title">AIコーチ</div>
+      <div className="card">
+        <div className="field">
+          <label>Anthropic APIキー</label>
+          <div className="row" style={{ gap: 6 }}>
+            <input
+              className="input"
+              style={{ flex: 1 }}
+              type={showKey ? 'text' : 'password'}
+              inputMode="text"
+              autoComplete="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              placeholder="sk-ant-..."
+              value={aiKey}
+              onChange={(e) => setAiKey(e.target.value.trim())}
+            />
+            <button className="btn btn-sm" onClick={() => setShowKey((v) => !v)}>
+              {showKey ? '隠す' : '表示'}
+            </button>
+          </div>
+        </div>
+        <div className="prev-hint" style={{ marginTop: 8 }}>
+          キーを登録すると「今日」画面のAIコーチが使えます。記録の要約が Anthropic に送信されます（このアプリの他のデータは送信されません）。
+          キーはこの端末内のみに保存され、JSONエクスポートには<strong>含まれません</strong>。
+          <br />キーは <span style={{ wordBreak: 'break-all' }}>console.anthropic.com</span> で取得できます。
+        </div>
+      </div>
 
       {/* バックアップ */}
       <div className="section-title">バックアップ</div>

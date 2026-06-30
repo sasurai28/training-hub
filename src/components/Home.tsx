@@ -2,6 +2,7 @@ import { useStore } from '../store'
 import { daysUntil, formatJP, todayISO, weekdayKey } from '../lib/dates'
 import { weekSummary } from '../lib/selectors'
 import { ProgressBar } from './ui'
+import Coach from './Coach'
 import type { RecorderKind } from './Recorder'
 import type { Tab } from './TabBar'
 import type { ActivityType } from '../types'
@@ -87,6 +88,9 @@ export default function Home({ openRecorder, goTab }: { openRecorder: (k: Record
           )}
         </div>
       )}
+
+      {/* AIコーチ */}
+      <Coach goTab={goTab} />
 
       {/* クイック記録 */}
       <div className="section-title">クイック記録</div>
