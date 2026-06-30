@@ -1,0 +1,67 @@
+{
+  "2026-06-24": {
+    "date": "2026-06-24",
+    "gym": {
+      "menuId": "menu-a",
+      "exercises": [
+        { "name": "レッグプレス", "sets": [ { "weightKg": 55, "reps": 10 }, { "weightKg": 55, "reps": 10 }, { "weightKg": 55, "reps": 10 } ] },
+        { "name": "チェストプレス", "sets": [ { "weightKg": 19, "reps": 10 }, { "weightKg": 19, "reps": 10 }, { "weightKg": 19, "reps": 10 } ] },
+        { "name": "ラットプルダウン", "sets": [ { "weightKg": 33, "reps": 10 }, { "weightKg": 33, "reps": 10 }, { "weightKg": 33, "reps": 10 } ] },
+        { "name": "ショルダープレス", "sets": [ { "weightKg": 15, "reps": 5 }, { "weightKg": 10, "reps": 10 }, { "weightKg": 5, "reps": 10 } ] },
+        { "name": "プランク", "sets": [ { "weightKg": 0, "reps": 45 }, { "weightKg": 0, "reps": 45 }, { "weightKg": 0, "reps": 45 } ] }
+      ]
+    },
+    "proteinOk": true
+  },
+  "2026-06-25": {
+    "date": "2026-06-25",
+    "run": { "km": 4.96, "durationSec": 1810, "kind": "jog", "memo": "朝ラン キロ6:05 心拍144" },
+    "pickleball": { "done": true, "memo": "12-15時 3時間" },
+    "proteinOk": true
+  },
+  "2026-06-26": {
+    "date": "2026-06-26",
+    "run": { "km": 3.27, "durationSec": 1224, "kind": "jog", "memo": "朝ラン キロ6:13 心拍140" },
+    "pickleball": { "done": true, "memo": "12-15時 3時間" },
+    "proteinOk": true
+  },
+  "2026-06-27": {
+    "date": "2026-06-27",
+    "gym": {
+      "menuId": "menu-b",
+      "exercises": [
+        { "name": "レッグカール", "sets": [ { "weightKg": 33, "reps": 10 }, { "weightKg": 33, "reps": 10 }, { "weightKg": 33, "reps": 10 } ] },
+        { "name": "シーテッドロー", "sets": [ { "weightKg": 26, "reps": 10 }, { "weightKg": 26, "reps": 10 }, { "weightKg": 26, "reps": 10 } ] },
+        { "name": "レッグプレス", "sets": [ { "weightKg": 65, "reps": 10 }, { "weightKg": 65, "reps": 10 }, { "weightKg": 65, "reps": 10 } ] },
+        { "name": "チェストプレス", "sets": [ { "weightKg": 26, "reps": 10 }, { "weightKg": 26, "reps": 10 }, { "weightKg": 26, "reps": 9 } ] },
+        { "name": "アブドミナル", "sets": [ { "weightKg": 20, "reps": 10 }, { "weightKg": 20, "reps": 10 }, { "weightKg": 20, "reps": 10 } ] }
+      ]
+    },
+    "proteinOk": true
+  },
+  "2026-06-28": {
+    "date": "2026-06-28",
+    "run": { "km": 5.30, "durationSec": 2001, "kind": "jog", "memo": "朝ラン キロ6:17 心拍141 難易度・簡単" },
+    "proteinOk": true
+  },
+  "2026-06-29": {
+    "date": "2026-06-29",
+    "gym": {
+      "menuId": "menu-a",
+      "exercises": [
+        { "name": "レッグプレス", "sets": [ { "weightKg": 75, "reps": 10 }, { "weightKg": 75, "reps": 10 }, { "weightKg": 75, "reps": 10 } ] },
+        { "name": "チェストプレス", "sets": [ { "weightKg": 26, "reps": 10 }, { "weightKg": 26, "reps": 10 }, { "weightKg": 26, "reps": 10 } ] },
+        { "name": "ラットプルダウン", "sets": [ { "weightKg": 40, "reps": 10 }, { "weightKg": 40, "reps": 8 }, { "weightKg": 33, "reps": 10 } ] },
+        { "name": "ショルダープレス", "sets": [ { "weightKg": 10, "reps": 10 }, { "weightKg": 10, "reps": 10 }, { "weightKg": 10, "reps": 10 } ] },
+        { "name": "プランク", "sets": [ { "weightKg": 0, "reps": 46 } ] }
+      ]
+    },
+    "proteinOk": true
+  },
+  "2026-06-30": {
+    "date": "2026-06-30",
+    "run": { "km": 5.16, "durationSec": 1857, "kind": "jog", "memo": "朝ラン キロ5:59 心拍137" },
+    "pickleball": { "done": true, "memo": "12:13-14:48 2時間32分 平均心拍113" },
+    "proteinOk": true
+  }
+}
