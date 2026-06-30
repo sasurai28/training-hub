@@ -16,6 +16,8 @@ export default function SettingsView() {
   const { menus, settings, setMenus, setSettings, replaceAll, mergeLogs, exportJSON, aiKey, setAiKey } = useStore()
   const [msg, setMsg] = useState('')
   const [showKey, setShowKey] = useState(false)
+  const [pasteOpen, setPasteOpen] = useState(false)
+  const [pasteText, setPasteText] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
   const mergeRef = useRef<HTMLInputElement>(null)
 
@@ -76,18 +78,27 @@ export default function SettingsView() {
       setMsg('インポートしました')
     }
   }
-  const handleMergeFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const text = await file.text()
+  const mergeFromText = (text: string): boolean => {
     const res = parseLogsImport(text)
-    e.target.value = ''
-    if (!res.ok || !res.logs) { setMsg('取り込み失敗: ' + (res.error ?? '不明')); return }
+    if (!res.ok || !res.logs) { setMsg('取り込み失敗: ' + (res.error ?? '不明')); return false }
     const count = Object.keys(res.logs).length
     if (window.confirm(`${count}日分の記録を現在のデータに追加します（同じ日は上書き）。よろしいですか？`)) {
       mergeLogs(res.logs)
       setMsg(`${count}日分の記録を取り込みました`)
+      return true
     }
+    return false
+  }
+  const handleMergeFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const text = await file.text()
+    e.target.value = ''
+    mergeFromText(text)
+  }
+  const handlePasteImport = () => {
+    if (!pasteText.trim()) { setMsg('テキストが空です'); return }
+    if (mergeFromText(pasteText)) { setPasteText(''); setPasteOpen(false) }
   }
 
   return (
@@ -264,10 +275,23 @@ export default function SettingsView() {
         <button className="btn btn-block" onClick={handleExport}>⬇️ JSON エクスポート</button>
         <button className="btn btn-block" style={{ marginTop: 10 }} onClick={() => fileRef.current?.click()}>⬆️ JSON インポート（全置換）</button>
         <input ref={fileRef} type="file" accept="application/json,.json" style={{ display: 'none' }} onChange={handleFile} />
-        <button className="btn btn-block" style={{ marginTop: 10 }} onClick={() => mergeRef.current?.click()}>➕ 記録をマージ取り込み</button>
+        <button className="btn btn-block" style={{ marginTop: 10 }} onClick={() => mergeRef.current?.click()}>➕ 記録をマージ取り込み（ファイル）</button>
         <input ref={mergeRef} type="file" accept="application/json,.json" style={{ display: 'none' }} onChange={handleMergeFile} />
+        <button className="btn btn-block" style={{ marginTop: 10 }} onClick={() => setPasteOpen((v) => !v)}>📋 テキストを貼り付けて取り込み</button>
+        {pasteOpen && (
+          <div style={{ marginTop: 8 }}>
+            <textarea
+              className="input"
+              style={{ width: '100%', minHeight: 120, resize: 'vertical', fontSize: 13, fontFamily: 'monospace' }}
+              value={pasteText}
+              onChange={(e) => setPasteText(e.target.value)}
+              placeholder={'ここにJSONを貼り付け。例:\n{"items":[{"date":"2026-06-30","type":"weight","kg":72.4}]}'}
+            />
+            <button className="btn btn-block" style={{ marginTop: 8 }} onClick={handlePasteImport}>この内容を取り込む</button>
+          </div>
+        )}
         <div className="prev-hint" style={{ marginTop: 8 }}>
-          マージ取り込みは、メニュー・設定を保ったまま過去記録を追加します。バックアップ全体（ExportBundle）／日付キーのlogs JSON／Apple Health（ショートカット）の items 形式に対応。
+          メニュー・設定を保ったまま過去記録を追加します。バックアップ全体（ExportBundle）／日付キーのlogs JSON／Apple Health の items 形式に対応。ショートカットでクリップボードにコピー → ここに貼り付ければファイル保存は不要です。
         </div>
         {msg && <div className="prev-hint" style={{ marginTop: 10, color: 'var(--good)' }}>{msg}</div>}
       </div>
