@@ -48,6 +48,7 @@ export default function Planner() {
       )
       const context =
         buildCoachContext({ logs, settings }, start) +
+        (settings.gymEquipment?.trim() ? `\n\n## 利用できるジムの設備（この範囲の種目だけ使う）\n${settings.gymEquipment.trim()}` : '') +
         `\n\n## 計画する日付（${start} 〜 ${addDays(start, horizon - 1)}・この全日付に計画を入れる）\n` +
         constraintLines.join('\n') +
         '\n\n## 現在のジムメニュー（これを土台に更新可）\n' +

@@ -198,6 +198,23 @@ export default function SettingsView() {
         </div>
       </details>
 
+      {/* ジムの設備 */}
+      <details className="card" style={{ marginTop: 12 }}>
+        <summary style={{ fontWeight: 800, cursor: 'pointer' }}>ジムの設備（AIメニュー用）</summary>
+        <div style={{ marginTop: 12 }}>
+          <textarea
+            className="input"
+            style={{ width: '100%', minHeight: 160, resize: 'vertical', fontSize: 13, lineHeight: 1.5 }}
+            value={settings.gymEquipment}
+            onChange={(e) => setSettings((prev) => ({ ...prev, gymEquipment: e.target.value }))}
+            placeholder="利用できるマシン・器具を記入"
+          />
+          <div className="prev-hint" style={{ marginTop: 6 }}>
+            AIに渡す「利用できる器具」のリストです。ここにある設備でできる種目だけがメニューに提案されます。ジムを変えたら書き換えてください。
+          </div>
+        </div>
+      </details>
+
       {/* AIコーチ */}
       <div className="section-title">AIコーチ</div>
       <div className="card">
