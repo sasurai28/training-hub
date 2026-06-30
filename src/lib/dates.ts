@@ -73,6 +73,13 @@ export function addDays(iso: string, n: number): string {
   return toISO(d)
 }
 
+/** start から count 日分の ISO 日付配列（start を含む） */
+export function dateRange(start: string, count: number): string[] {
+  const out: string[] = []
+  for (let i = 0; i < count; i++) out.push(addDays(start, i))
+  return out
+}
+
 export function addMonths(iso: string, n: number): string {
   const d = parseISO(iso)
   d.setMonth(d.getMonth() + n)

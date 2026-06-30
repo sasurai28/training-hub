@@ -7,7 +7,7 @@ import type { Tab } from './TabBar'
 type Status = 'idle' | 'loading' | 'done' | 'error'
 
 export default function Coach({ goTab }: { goTab: (t: Tab) => void }) {
-  const { logs, menus, settings, aiKey } = useStore()
+  const { logs, settings, aiKey } = useStore()
   const [text, setText] = useState('')
   const [status, setStatus] = useState<Status>('idle')
   const [error, setError] = useState('')
@@ -22,7 +22,7 @@ export default function Coach({ goTab }: { goTab: (t: Tab) => void }) {
     setError('')
     setStatus('loading')
     try {
-      const context = buildCoachContext({ logs, menus, settings }, todayISO())
+      const context = buildCoachContext({ logs, settings }, todayISO())
       await streamAdvice(aiKey, context, (delta) => setText((prev) => prev + delta), ctrl.signal)
       setStatus('done')
     } catch (e) {

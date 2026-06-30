@@ -1,10 +1,10 @@
-import type { Menu, ScheduleItem, Weekday } from '../types'
-import { WEEKDAY_ORDER } from './dates'
-import type { WeeklyPlan } from './ai'
+import type { DayConstraint, Menu, ScheduleItem } from '../types'
+import type { DatePlan } from './ai'
 
-export interface ReconciledPlan {
+export interface ReconciledDatePlan {
   menus: Menu[]
-  weeklySchedule: Record<Weekday, ScheduleItem[]>
+  /** date -> その日の計画（gym/run/rest） */
+  days: Record<string, ScheduleItem[]>
 }
 
 function clampInt(n: unknown, min: number, max: number, def: number): number {
@@ -13,19 +13,11 @@ function clampInt(n: unknown, min: number, max: number, def: number): number {
   return Math.min(max, Math.max(min, v))
 }
 
-const VALID_TYPES = new Set(['gym', 'run', 'pickleball', 'rest'])
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
+const VALID_TYPES = new Set(['gym', 'run', 'rest'])
 
-/**
- * AIプランをアプリのデータ形に整え、安全に適用できる形にする。
- * - 数値はクランプ、不正項目は除外
- * - ピックルボールは AI 出力を無視し、現在の予定をそのまま維持
- * - gym の menuId は生成された menus の id に解決（無ければ先頭に）
- */
-export function reconcilePlan(
-  plan: WeeklyPlan,
-  current: Record<Weekday, ScheduleItem[]>,
-): ReconciledPlan {
-  const menus: Menu[] = (plan.menus ?? [])
+function sanitizeMenus(menus: DatePlan['menus']): Menu[] {
+  return (menus ?? [])
     .filter((m) => m && m.id && m.name)
     .map((m) => ({
       id: String(m.id),
@@ -43,30 +35,50 @@ export function reconcilePlan(
           }
         }),
     }))
+}
 
+/**
+ * AIの日付プランをアプリのデータ形に整える。
+ * - 数値クランプ・不正項目除外・gym の menuId 解決
+ * - 強制休息日（forcedRest）はトレーニングを入れず rest にする
+ * - allowedDates 内の日付のみ採用（範囲外・重複・不正日付は無視）
+ */
+export function reconcileDatePlan(
+  plan: DatePlan,
+  constraints: Record<string, DayConstraint>,
+  allowedDates: string[],
+): ReconciledDatePlan {
+  const menus = sanitizeMenus(plan.menus)
   const menuIds = new Set(menus.map((m) => m.id))
   const fallbackMenuId = menus[0]?.id
+  const allowed = new Set(allowedDates)
 
-  const weeklySchedule = {} as Record<Weekday, ScheduleItem[]>
-  for (const wd of WEEKDAY_ORDER) {
-    const planItems = (plan.weeklySchedule?.[wd] ?? []).filter((it) => it && VALID_TYPES.has(it.type))
-    const aiItems: ScheduleItem[] = []
-    for (const it of planItems) {
-      if (it.type === 'pickleball') continue // ピックルは現状維持するので無視
-      if (it.type === 'rest') continue // rest は後で必要なときだけ補う
+  // AIの日付→items を引きやすく
+  const byDate = new Map<string, ScheduleItem[]>()
+  for (const day of plan.days ?? []) {
+    if (!day || !DATE_RE.test(day.date) || !allowed.has(day.date)) continue
+    if (byDate.has(day.date)) continue // 重複日付は最初を採用
+    const items: ScheduleItem[] = []
+    for (const it of day.items ?? []) {
+      if (!it || !VALID_TYPES.has(it.type) || it.type === 'rest') continue
       const item: ScheduleItem = { type: it.type }
-      if (it.type === 'gym') {
-        item.menuId = it.menuId && menuIds.has(it.menuId) ? it.menuId : fallbackMenuId
-      }
+      if (it.type === 'gym') item.menuId = it.menuId && menuIds.has(it.menuId) ? it.menuId : fallbackMenuId
       if (it.note && String(it.note).trim()) item.note = String(it.note).trim()
-      aiItems.push(item)
+      items.push(item)
     }
-    // 現在のピックルボールを維持
-    const pickle = (current[wd] ?? []).filter((it) => it.type === 'pickleball')
-    let merged = [...aiItems, ...pickle]
-    if (merged.length === 0) merged = [{ type: 'rest' }]
-    weeklySchedule[wd] = merged
+    byDate.set(day.date, items)
   }
 
-  return { menus, weeklySchedule }
+  const days: Record<string, ScheduleItem[]> = {}
+  for (const date of allowedDates) {
+    // 強制休息日はトレーニングを入れない
+    if (constraints[date]?.forcedRest) {
+      days[date] = [{ type: 'rest' }]
+      continue
+    }
+    const items = byDate.get(date) ?? []
+    days[date] = items.length ? items : [{ type: 'rest' }]
+  }
+
+  return { menus, days }
 }

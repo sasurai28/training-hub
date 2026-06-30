@@ -16,9 +16,11 @@ const ACT_CLASS: Record<ActivityType | 'rest', string> = {
 }
 
 export default function Home({ openRecorder, goTab }: { openRecorder: (k: RecorderKind, date?: string) => void; goTab: (t: Tab) => void }) {
-  const { logs, menus, settings } = useStore()
+  const { logs, menus, settings, plan, constraints } = useStore()
   const today = todayISO()
-  const schedule = settings.weeklySchedule[weekdayKey(today)] ?? []
+  const todayCon = constraints[today]
+  // 日付ベースの計画があれば優先。無ければ週テンプレートにフォールバック
+  const schedule = plan[today] ?? settings.weeklySchedule[weekdayKey(today)] ?? []
   const summary = weekSummary(logs, today)
   const goals = settings.goals
 
@@ -41,8 +43,10 @@ export default function Home({ openRecorder, goTab }: { openRecorder: (k: Record
       {/* 今日のメニュー */}
       <div className="card" style={{ marginTop: 12 }}>
         <div className="stepper-label">今日のメニュー</div>
-        {schedule.length === 0 || schedule.every((s) => s.type === 'rest') ? (
-          <div style={{ fontWeight: 800, fontSize: 18 }}>休養日 🛌</div>
+        {todayCon?.forcedRest ? (
+          <div style={{ fontWeight: 800, fontSize: 18 }}>🛌 強制休息日</div>
+        ) : schedule.length === 0 || schedule.every((s) => s.type === 'rest') ? (
+          <div style={{ fontWeight: 800, fontSize: 18 }}>休養日 🛌{todayCon?.pickleball ? ' ＋ 🎾 ピックル' : ''}</div>
         ) : (
           <div>
             <div>
@@ -53,6 +57,11 @@ export default function Home({ openRecorder, goTab }: { openRecorder: (k: Record
                   {s.note ? <span className="muted"> — {s.note}</span> : ''}
                 </div>
               ))}
+              {todayCon?.pickleball && (
+                <div className="menu-chip">
+                  <span className={`pill ${ACT_CLASS.pickleball}`} style={{ padding: '2px 6px' }}>{ACT_LABEL.pickleball}</span>
+                </div>
+              )}
             </div>
             {gymMenu && (
               <div style={{ marginTop: 12 }}>

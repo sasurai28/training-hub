@@ -1,11 +1,13 @@
-import type { AppData, DayLog, ExportBundle, Menu, Settings } from '../types'
+import type { AppData, DayConstraint, DayLog, ExportBundle, Menu, ScheduleItem, Settings } from '../types'
 import { defaultMenus, defaultSettings } from './defaults'
 
 const K_LOGS = 'th:logs'
 const K_MENUS = 'th:menus'
 const K_SETTINGS = 'th:settings'
+const K_PLAN = 'th:plan'
+const K_CONSTRAINTS = 'th:constraints'
 const K_AI_KEY = 'th:aiKey'
-const EXPORT_VERSION = 1
+const EXPORT_VERSION = 2
 
 function read<T>(key: string, fallback: T): T {
   try {
@@ -43,12 +45,16 @@ export function loadAppData(): AppData {
   const savedMenus = read<Menu[] | null>(K_MENUS, null)
   const menus = savedMenus && savedMenus.length > 0 ? savedMenus : defaultMenus()
   const settings = mergeSettings(read<Partial<Settings> | null>(K_SETTINGS, null))
-  return { logs, menus, settings }
+  const plan = read<Record<string, ScheduleItem[]>>(K_PLAN, {})
+  const constraints = read<Record<string, DayConstraint>>(K_CONSTRAINTS, {})
+  return { logs, menus, settings, plan, constraints }
 }
 
 export const saveLogs = (logs: Record<string, DayLog>) => write(K_LOGS, logs)
 export const saveMenus = (menus: Menu[]) => write(K_MENUS, menus)
 export const saveSettings = (settings: Settings) => write(K_SETTINGS, settings)
+export const savePlan = (plan: Record<string, ScheduleItem[]>) => write(K_PLAN, plan)
+export const saveConstraints = (c: Record<string, DayConstraint>) => write(K_CONSTRAINTS, c)
 
 // AIコーチ用 APIキー。意図的に ExportBundle には含めない（バックアップへの鍵漏洩を防ぐ）。
 export function loadAiKey(): string {
@@ -75,6 +81,8 @@ export function exportBundle(data: AppData, exportedAt: string): ExportBundle {
     logs: data.logs,
     menus: data.menus,
     settings: data.settings,
+    plan: data.plan,
+    constraints: data.constraints,
   }
 }
 
@@ -104,6 +112,8 @@ export function parseImport(text: string): ImportResult {
       logs: (b.logs ?? {}) as Record<string, DayLog>,
       menus: b.menus as Menu[],
       settings: mergeSettings(b.settings as Settings),
+      plan: (b.plan ?? {}) as Record<string, ScheduleItem[]>,
+      constraints: (b.constraints ?? {}) as Record<string, DayConstraint>,
     },
   }
 }
