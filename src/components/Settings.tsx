@@ -135,6 +135,15 @@ export default function SettingsView() {
                     </select>
                   )}
                   <button className="icon-btn" aria-label="削除" onClick={() => setSchedule(wd, settings.weeklySchedule[wd].filter((_, i) => i !== idx))}>✕</button>
+                  {it.type !== 'rest' && (
+                    <input
+                      className="input"
+                      style={{ flex: '1 1 100%', minHeight: 36, fontSize: 13 }}
+                      placeholder="メモ（例: 8km ジョグ キロ6:00）"
+                      value={it.note ?? ''}
+                      onChange={(e) => updateItem(wd, idx, { note: e.target.value })}
+                    />
+                  )}
                 </div>
               ))}
             </div>
