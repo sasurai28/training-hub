@@ -38,6 +38,7 @@ function mergeSettings(saved: Partial<Settings> | null): Settings {
     events: saved.events ?? base.events,
     theme: saved.theme ?? base.theme,
     gymEquipment: saved.gymEquipment ?? base.gymEquipment,
+    policy: saved.policy ?? base.policy,
   }
 }
 

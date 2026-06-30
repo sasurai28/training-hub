@@ -219,6 +219,19 @@ export default function SettingsView() {
       <div className="section-title">AIコーチ</div>
       <div className="card">
         <div className="field">
+          <label>現在の方針（AIコーチ・計画に反映）</label>
+          <textarea
+            className="input"
+            style={{ width: '100%', minHeight: 100, resize: 'vertical', fontSize: 14, lineHeight: 1.5 }}
+            value={settings.policy}
+            onChange={(e) => setSettings((prev) => ({ ...prev, policy: e.target.value }))}
+            placeholder="例: 今月は減量を最優先。ランは脚を残すため週3まで。右肩が痛むので重いショルダープレスは避ける。"
+          />
+          <div className="prev-hint" style={{ marginTop: 4 }}>
+            ここに書いた方針を、AIコーチのアドバイスとAIメニュー生成が最優先で考慮します。
+          </div>
+        </div>
+        <div className="field">
           <label>Anthropic APIキー</label>
           <div className="row" style={{ gap: 6 }}>
             <input
