@@ -11,7 +11,10 @@ import {
 import type { AppData, DayLog, Menu, Settings } from './types'
 import {
   exportBundle,
+  loadAiKey,
   loadAppData,
+  mergeLogs as mergeLogsData,
+  saveAiKey,
   saveLogs,
   saveMenus,
   saveSettings,
@@ -29,7 +32,12 @@ interface Store {
   setMenus: (menus: Menu[]) => void
   setSettings: (settings: Settings | ((prev: Settings) => Settings)) => void
   replaceAll: (data: AppData) => void
+  /** 取り込んだ記録を既存 logs に日付単位でマージして保存。マージ後の日数を返す */
+  mergeLogs: (incoming: Record<string, DayLog>) => number
   exportJSON: () => string
+  /** AIコーチ用 APIキー（localStorage のみ・エクスポート対象外） */
+  aiKey: string
+  setAiKey: (key: string) => void
 }
 
 const StoreContext = createContext<Store | null>(null)
@@ -39,6 +47,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [logs, setLogs] = useState<Record<string, DayLog>>(initial.current.logs)
   const [menus, setMenusState] = useState<Menu[]>(initial.current.menus)
   const [settings, setSettingsState] = useState<Settings>(initial.current.settings)
+  const [aiKey, setAiKeyState] = useState<string>(loadAiKey())
 
   // テーマを <html data-theme> に反映
   useEffect(() => {
@@ -84,14 +93,28 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     saveSettings(data.settings)
   }, [])
 
+  const mergeLogs = useCallback((incoming: Record<string, DayLog>) => {
+    setLogs((prev) => {
+      const merged = mergeLogsData(prev, incoming)
+      saveLogs(merged)
+      return merged
+    })
+    return Object.keys(incoming).length
+  }, [])
+
+  const setAiKey = useCallback((key: string) => {
+    setAiKeyState(key)
+    saveAiKey(key)
+  }, [])
+
   const exportJSON = useCallback(() => {
     const bundle = exportBundle({ logs, menus, settings }, toISO(new Date()))
     return JSON.stringify(bundle, null, 2)
   }, [logs, menus, settings])
 
   const value = useMemo<Store>(
-    () => ({ logs, menus, settings, getDay, updateDay, setMenus, setSettings, replaceAll, exportJSON }),
-    [logs, menus, settings, getDay, updateDay, setMenus, setSettings, replaceAll, exportJSON],
+    () => ({ logs, menus, settings, getDay, updateDay, setMenus, setSettings, replaceAll, mergeLogs, exportJSON, aiKey, setAiKey }),
+    [logs, menus, settings, getDay, updateDay, setMenus, setSettings, replaceAll, mergeLogs, exportJSON, aiKey, setAiKey],
   )
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>

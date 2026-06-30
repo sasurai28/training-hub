@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { useStore } from '../store'
 import { WEEKDAY_LABEL, WEEKDAY_ORDER, todayISO } from '../lib/dates'
-import { parseImport } from '../lib/storage'
+import { parseImport, parseLogsImport } from '../lib/storage'
 import { Segmented } from './ui'
 import type { ActivityType, Menu, ScheduleItem, Theme, Weekday } from '../types'
 
@@ -13,9 +13,11 @@ const ACT_OPTIONS: { value: ScheduleItem['type']; label: string }[] = [
 ]
 
 export default function SettingsView() {
-  const { menus, settings, setMenus, setSettings, replaceAll, exportJSON } = useStore()
+  const { menus, settings, setMenus, setSettings, replaceAll, mergeLogs, exportJSON, aiKey, setAiKey } = useStore()
   const [msg, setMsg] = useState('')
+  const [showKey, setShowKey] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
+  const mergeRef = useRef<HTMLInputElement>(null)
 
   // ── スケジュール ──────────────────────
   const setSchedule = (wd: Weekday, items: ScheduleItem[]) =>
@@ -72,6 +74,19 @@ export default function SettingsView() {
     if (window.confirm('現在のデータをこのバックアップで上書きします。よろしいですか？')) {
       replaceAll(res.data)
       setMsg('インポートしました')
+    }
+  }
+  const handleMergeFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const text = await file.text()
+    const res = parseLogsImport(text)
+    e.target.value = ''
+    if (!res.ok || !res.logs) { setMsg('取り込み失敗: ' + (res.error ?? '不明')); return }
+    const count = Object.keys(res.logs).length
+    if (window.confirm(`${count}日分の記録を現在のデータに追加します（同じ日は上書き）。よろしいですか？`)) {
+      mergeLogs(res.logs)
+      setMsg(`${count}日分の記録を取り込みました`)
     }
   }
 
@@ -174,12 +189,47 @@ export default function SettingsView() {
         </div>
       </details>
 
+      {/* AIコーチ */}
+      <div className="section-title">AIコーチ</div>
+      <div className="card">
+        <div className="field">
+          <label>Anthropic APIキー</label>
+          <div className="row" style={{ gap: 6 }}>
+            <input
+              className="input"
+              style={{ flex: 1 }}
+              type={showKey ? 'text' : 'password'}
+              inputMode="text"
+              autoComplete="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              placeholder="sk-ant-..."
+              value={aiKey}
+              onChange={(e) => setAiKey(e.target.value.trim())}
+            />
+            <button className="btn btn-sm" onClick={() => setShowKey((v) => !v)}>
+              {showKey ? '隠す' : '表示'}
+            </button>
+          </div>
+        </div>
+        <div className="prev-hint" style={{ marginTop: 8 }}>
+          キーを登録すると「今日」画面のAIコーチが使えます。記録の要約が Anthropic に送信されます（このアプリの他のデータは送信されません）。
+          キーはこの端末内のみに保存され、JSONエクスポートには<strong>含まれません</strong>。
+          <br />キーは <span style={{ wordBreak: 'break-all' }}>console.anthropic.com</span> で取得できます。
+        </div>
+      </div>
+
       {/* バックアップ */}
       <div className="section-title">バックアップ</div>
       <div className="card">
         <button className="btn btn-block" onClick={handleExport}>⬇️ JSON エクスポート</button>
-        <button className="btn btn-block" style={{ marginTop: 10 }} onClick={() => fileRef.current?.click()}>⬆️ JSON インポート</button>
+        <button className="btn btn-block" style={{ marginTop: 10 }} onClick={() => fileRef.current?.click()}>⬆️ JSON インポート（全置換）</button>
         <input ref={fileRef} type="file" accept="application/json,.json" style={{ display: 'none' }} onChange={handleFile} />
+        <button className="btn btn-block" style={{ marginTop: 10 }} onClick={() => mergeRef.current?.click()}>➕ 記録をマージ取り込み</button>
+        <input ref={mergeRef} type="file" accept="application/json,.json" style={{ display: 'none' }} onChange={handleMergeFile} />
+        <div className="prev-hint" style={{ marginTop: 8 }}>
+          マージ取り込みは、メニュー・設定を保ったまま過去記録を追加します。バックアップ全体（ExportBundle）でも、日付キーだけのlogs JSONでも読み込めます。
+        </div>
         {msg && <div className="prev-hint" style={{ marginTop: 10, color: 'var(--good)' }}>{msg}</div>}
       </div>
 
