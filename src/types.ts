@@ -85,6 +85,8 @@ export interface Settings {
   goals: Goals
   events: AppEvent[]
   theme: Theme
+  /** 利用できるジムの設備（自由記述）。AIメニュー生成でこの範囲の種目に限定する */
+  gymEquipment: string
 }
 
 /** カレンダー上でユーザーが日付ごとに設定する制約 */

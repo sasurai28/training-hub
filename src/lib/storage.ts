@@ -37,6 +37,7 @@ function mergeSettings(saved: Partial<Settings> | null): Settings {
     goals: { ...base.goals, ...(saved.goals ?? {}) },
     events: saved.events ?? base.events,
     theme: saved.theme ?? base.theme,
+    gymEquipment: saved.gymEquipment ?? base.gymEquipment,
   }
 }
 
