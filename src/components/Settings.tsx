@@ -267,7 +267,7 @@ export default function SettingsView() {
         <button className="btn btn-block" style={{ marginTop: 10 }} onClick={() => mergeRef.current?.click()}>➕ 記録をマージ取り込み</button>
         <input ref={mergeRef} type="file" accept="application/json,.json" style={{ display: 'none' }} onChange={handleMergeFile} />
         <div className="prev-hint" style={{ marginTop: 8 }}>
-          マージ取り込みは、メニュー・設定を保ったまま過去記録を追加します。バックアップ全体（ExportBundle）でも、日付キーだけのlogs JSONでも読み込めます。
+          マージ取り込みは、メニュー・設定を保ったまま過去記録を追加します。バックアップ全体（ExportBundle）／日付キーのlogs JSON／Apple Health（ショートカット）の items 形式に対応。
         </div>
         {msg && <div className="prev-hint" style={{ marginTop: 10, color: 'var(--good)' }}>{msg}</div>}
       </div>
