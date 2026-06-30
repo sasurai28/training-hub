@@ -129,11 +129,63 @@ export interface LogsImportResult {
   logs?: Record<string, DayLog>
 }
 
+function num(v: unknown): number | undefined {
+  const n = Number(v)
+  return Number.isFinite(n) ? n : undefined
+}
+
+/**
+ * Apple Health（ショートカット）向けの平坦な items 形式を logs にマッピングする。
+ * 例: { items: [ {date,type:'weight',kg}, {date,type:'run',km,durationSec,avgHr}, {date,type:'pickleball',durationSec} ] }
+ * ショートカットで組み立てやすいよう、ネストの浅いフラットな配列を受け付ける。
+ */
+function parseHealthItems(items: unknown[]): LogsImportResult {
+  const logs: Record<string, DayLog> = {}
+  let count = 0
+  for (const raw of items) {
+    if (!raw || typeof raw !== 'object') continue
+    const it = raw as Record<string, unknown>
+    const date = typeof it.date === 'string' ? it.date.slice(0, 10) : ''
+    if (!DATE_RE.test(date)) continue
+    const day: DayLog = logs[date] ?? { date }
+    const type = String(it.type ?? '')
+    if (type === 'weight') {
+      const kg = num(it.kg)
+      if (kg == null) continue
+      day.weightKg = kg
+    } else if (type === 'run') {
+      const km = num(it.km)
+      const durationSec = num(it.durationSec)
+      if (km == null || durationSec == null) continue
+      const hr = num(it.avgHr)
+      const memo = [typeof it.memo === 'string' ? it.memo : '', hr != null ? `心拍${Math.round(hr)}` : '']
+        .filter(Boolean)
+        .join(' ')
+      day.run = { km, durationSec: Math.round(durationSec), kind: 'jog', ...(memo ? { memo } : {}) }
+    } else if (type === 'pickleball') {
+      const durationSec = num(it.durationSec)
+      const memo = [typeof it.memo === 'string' ? it.memo : '', durationSec != null ? `${Math.round(durationSec / 60)}分` : '']
+        .filter(Boolean)
+        .join(' ')
+      day.pickleball = { done: true, ...(memo ? { memo } : {}) }
+    } else if (type === 'protein') {
+      day.proteinOk = it.ok !== false
+    } else {
+      continue
+    }
+    logs[date] = day
+    count++
+  }
+  if (count === 0) return { ok: false, error: 'Healthデータから取り込める項目がありませんでした' }
+  return { ok: true, logs }
+}
+
 /**
  * 「記録（logs）」だけを取り込むための緩いパーサ。
- * 次の2形式をどちらも受け付ける:
+ * 次の3形式を受け付ける:
  *   1) ExportBundle 全体（`app:"training-hub"` ラッパー付き）→ その logs を取り出す
  *   2) 日付キーの logs マップ単体（例: `{ "2026-06-24": { ... } }`）
+ *   3) Apple Health 向けの平坦な items 形式（`{ items: [...] }`）
  * メニューや設定は触らず、既存データへのマージに使う想定。
  */
 export function parseLogsImport(text: string): LogsImportResult {
@@ -147,6 +199,10 @@ export function parseLogsImport(text: string): LogsImportResult {
     return { ok: false, error: 'データの形式が不正です' }
   }
   const root = obj as Record<string, unknown>
+  // Apple Health（ショートカット）の items 形式
+  if (Array.isArray(root.items)) {
+    return parseHealthItems(root.items as unknown[])
+  }
   // ExportBundle 形式なら logs 部分だけを対象にする
   const source = (root.app === 'training-hub' && root.logs && typeof root.logs === 'object'
     ? root.logs
