@@ -62,6 +62,8 @@ export type Weekday = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun'
 export interface ScheduleItem {
   type: ActivityType | 'rest'
   menuId?: string
+  /** その活動の指示メモ（例: ラン「8km ジョグ キロ6:00」）。AIメニュー生成でも使う */
+  note?: string
 }
 
 export interface Goals {

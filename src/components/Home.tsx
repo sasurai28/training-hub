@@ -3,6 +3,7 @@ import { daysUntil, formatJP, todayISO, weekdayKey } from '../lib/dates'
 import { weekSummary } from '../lib/selectors'
 import { ProgressBar } from './ui'
 import Coach from './Coach'
+import Planner from './Planner'
 import type { RecorderKind } from './Recorder'
 import type { Tab } from './TabBar'
 import type { ActivityType } from '../types'
@@ -46,10 +47,11 @@ export default function Home({ openRecorder, goTab }: { openRecorder: (k: Record
           <div>
             <div>
               {schedule.filter((s) => s.type !== 'rest').map((s, i) => (
-                <span key={i} className={`menu-chip`}>
+                <div key={i} className="menu-chip">
                   <span className={`pill ${ACT_CLASS[s.type]}`} style={{ padding: '2px 6px' }}>{ACT_LABEL[s.type]}</span>
                   {s.type === 'gym' && gymMenu ? gymMenu.name : ''}
-                </span>
+                  {s.note ? <span className="muted"> — {s.note}</span> : ''}
+                </div>
               ))}
             </div>
             {gymMenu && (
@@ -91,6 +93,9 @@ export default function Home({ openRecorder, goTab }: { openRecorder: (k: Record
 
       {/* AIコーチ */}
       <Coach goTab={goTab} />
+
+      {/* AIメニュー作成 */}
+      <Planner />
 
       {/* クイック記録 */}
       <div className="section-title">クイック記録</div>
