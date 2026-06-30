@@ -49,6 +49,7 @@ export const defaultSettings = (): Settings => ({
   ],
   theme: 'dark',
   gymEquipment: DEFAULT_GYM_EQUIPMENT,
+  policy: '',
 })
 
 /** エニタイムフィットネス 大正千島店のラインナップ（初期値・設定で変更可） */

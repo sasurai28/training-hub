@@ -87,6 +87,8 @@ export interface Settings {
   theme: Theme
   /** 利用できるジムの設備（自由記述）。AIメニュー生成でこの範囲の種目に限定する */
   gymEquipment: string
+  /** ユーザーの現在の方針（自由記述）。AIコーチ・計画のコンテキストに差し込む */
+  policy: string
 }
 
 /** カレンダー上でユーザーが日付ごとに設定する制約 */
