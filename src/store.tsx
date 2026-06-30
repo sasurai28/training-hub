@@ -8,15 +8,17 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import type { AppData, DayLog, Menu, Settings } from './types'
+import type { AppData, DayConstraint, DayLog, Menu, ScheduleItem, Settings } from './types'
 import {
   exportBundle,
   loadAiKey,
   loadAppData,
   mergeLogs as mergeLogsData,
   saveAiKey,
+  saveConstraints,
   saveLogs,
   saveMenus,
+  savePlan,
   saveSettings,
 } from './lib/storage'
 import { toISO } from './lib/dates'
@@ -38,6 +40,14 @@ interface Store {
   /** AIコーチ用 APIキー（localStorage のみ・エクスポート対象外） */
   aiKey: string
   setAiKey: (key: string) => void
+  /** date -> その日の計画（gym/run/rest） */
+  plan: Record<string, ScheduleItem[]>
+  /** date -> ユーザー設定の制約（ピックル参加・強制休息） */
+  constraints: Record<string, DayConstraint>
+  /** ある日の制約を部分更新（空オブジェクトになったらキー削除） */
+  setDayConstraint: (date: string, patch: DayConstraint) => void
+  /** 複数日分の計画をまとめて上書き保存（AI適用で使用） */
+  setPlanDays: (days: Record<string, ScheduleItem[]>) => void
 }
 
 const StoreContext = createContext<Store | null>(null)
@@ -47,6 +57,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [logs, setLogs] = useState<Record<string, DayLog>>(initial.current.logs)
   const [menus, setMenusState] = useState<Menu[]>(initial.current.menus)
   const [settings, setSettingsState] = useState<Settings>(initial.current.settings)
+  const [plan, setPlanState] = useState<Record<string, ScheduleItem[]>>(initial.current.plan)
+  const [constraints, setConstraintsState] = useState<Record<string, DayConstraint>>(initial.current.constraints)
   const [aiKey, setAiKeyState] = useState<string>(loadAiKey())
 
   // テーマを <html data-theme> に反映
@@ -88,9 +100,33 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setLogs(data.logs)
     setMenusState(data.menus)
     setSettingsState(data.settings)
+    setPlanState(data.plan)
+    setConstraintsState(data.constraints)
     saveLogs(data.logs)
     saveMenus(data.menus)
     saveSettings(data.settings)
+    savePlan(data.plan)
+    saveConstraints(data.constraints)
+  }, [])
+
+  const setDayConstraint = useCallback((date: string, patch: DayConstraint) => {
+    setConstraintsState((prev) => {
+      const merged = { ...(prev[date] ?? {}), ...patch }
+      const next = { ...prev }
+      // フラグが全て falsy になったらキーごと削除して肥大化を防ぐ
+      if (!merged.pickleball && !merged.forcedRest) delete next[date]
+      else next[date] = merged
+      saveConstraints(next)
+      return next
+    })
+  }, [])
+
+  const setPlanDays = useCallback((days: Record<string, ScheduleItem[]>) => {
+    setPlanState((prev) => {
+      const next = { ...prev, ...days }
+      savePlan(next)
+      return next
+    })
   }, [])
 
   const mergeLogs = useCallback((incoming: Record<string, DayLog>) => {
@@ -108,13 +144,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const exportJSON = useCallback(() => {
-    const bundle = exportBundle({ logs, menus, settings }, toISO(new Date()))
+    const bundle = exportBundle({ logs, menus, settings, plan, constraints }, toISO(new Date()))
     return JSON.stringify(bundle, null, 2)
-  }, [logs, menus, settings])
+  }, [logs, menus, settings, plan, constraints])
 
   const value = useMemo<Store>(
-    () => ({ logs, menus, settings, getDay, updateDay, setMenus, setSettings, replaceAll, mergeLogs, exportJSON, aiKey, setAiKey }),
-    [logs, menus, settings, getDay, updateDay, setMenus, setSettings, replaceAll, mergeLogs, exportJSON, aiKey, setAiKey],
+    () => ({ logs, menus, settings, getDay, updateDay, setMenus, setSettings, replaceAll, mergeLogs, exportJSON, aiKey, setAiKey, plan, constraints, setDayConstraint, setPlanDays }),
+    [logs, menus, settings, getDay, updateDay, setMenus, setSettings, replaceAll, mergeLogs, exportJSON, aiKey, setAiKey, plan, constraints, setDayConstraint, setPlanDays],
   )
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>

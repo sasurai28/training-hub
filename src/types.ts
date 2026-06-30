@@ -87,11 +87,23 @@ export interface Settings {
   theme: Theme
 }
 
-/** localStorage に分割保存する3つの塊をまとめた型 */
+/** カレンダー上でユーザーが日付ごとに設定する制約 */
+export interface DayConstraint {
+  /** その日ピックルボールに参加（仕事都合で毎週固定ではない） */
+  pickleball?: boolean
+  /** 旅行・ジム不可など、その日はトレーニング不可の強制休息 */
+  forcedRest?: boolean
+}
+
+/** localStorage に分割保存する塊をまとめた型 */
 export interface AppData {
-  logs: Record<string, DayLog> // date -> DayLog
+  logs: Record<string, DayLog> // date -> DayLog（実績）
   menus: Menu[]
   settings: Settings
+  /** date -> その日の計画（AI生成・手編集可。gym/run/rest） */
+  plan: Record<string, ScheduleItem[]>
+  /** date -> ユーザー設定の制約（ピックル参加・強制休息） */
+  constraints: Record<string, DayConstraint>
 }
 
 /** JSON エクスポート/インポートの外形 */
@@ -102,4 +114,6 @@ export interface ExportBundle {
   logs: Record<string, DayLog>
   menus: Menu[]
   settings: Settings
+  plan?: Record<string, ScheduleItem[]>
+  constraints?: Record<string, DayConstraint>
 }
