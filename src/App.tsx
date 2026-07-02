@@ -4,6 +4,7 @@ import { todayISO } from './lib/dates'
 import Home from './components/Home'
 import RecordTab from './components/RecordTab'
 import CalendarView from './components/CalendarView'
+import Stats from './components/Stats'
 import SettingsView from './components/Settings'
 import TabBar, { type Tab } from './components/TabBar'
 import Recorder, { type RecorderKind } from './components/Recorder'
@@ -33,6 +34,7 @@ function Shell() {
       {tab === 'home' && <Home openRecorder={openRecorder} goTab={setTab} />}
       {tab === 'record' && <RecordTab openRecorder={openRecorder} />}
       {tab === 'calendar' && <CalendarView openRecorder={openRecorder} />}
+      {tab === 'stats' && <Stats />}
       {tab === 'settings' && <SettingsView />}
 
       <TabBar tab={tab} onChange={setTab} />
