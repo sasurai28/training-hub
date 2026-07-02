@@ -1,9 +1,10 @@
-export type Tab = 'home' | 'record' | 'calendar' | 'settings'
+export type Tab = 'home' | 'record' | 'calendar' | 'stats' | 'settings'
 
 const TABS: { id: Tab; ico: string; label: string }[] = [
   { id: 'home', ico: '🏠', label: '今日' },
   { id: 'record', ico: '✏️', label: '記録' },
   { id: 'calendar', ico: '🗓️', label: 'カレンダー' },
+  { id: 'stats', ico: '📈', label: '分析' },
   { id: 'settings', ico: '⚙️', label: '設定' },
 ]
 
